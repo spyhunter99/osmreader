@@ -20,12 +20,8 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Stack;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.stream.events.XMLEvent;
 
@@ -67,9 +63,7 @@ public class Reader {
      }
      static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-
-     static Connection connection;
-     static PreparedStatement p;
+     PreparedStatement p;
 
 
      public void read(String path, Connection connection) throws Exception{
@@ -499,20 +493,5 @@ public class Reader {
           new Reader().read(args[0],connection);
      }
 
-     @Override
-     public void finalize() {
-          try {
-               super.finalize();
-          } catch (Throwable ex) {
-               Logger.getLogger(Reader.class.getName()).log(Level.SEVERE, null, ex);
-          }
-          if (connection != null) {
-               try {
-                    connection.close();
-               } catch (SQLException ex) {
-                    Logger.getLogger(Reader.class.getName()).log(Level.SEVERE, null, ex);
-               }
-          }
 
-     }
 }
