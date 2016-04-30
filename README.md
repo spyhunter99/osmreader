@@ -35,20 +35,18 @@ compile 'org.sqldroid:sqldroid:1.0.3'
 //Java JRE/JDK only
 compile 'org.osmdroid.reader:osm-reader-lib:1.0.0-SNAPSHOT'
 
-
-````
 //needed on android only
 DriverManager.registerDriver((Driver) (Class.forName(
         "org.sqldroid.SQLDroidDriver" , true,
         getClass().getClassLoader()).newInstance()));
 Connection con = DriverManager.getConnection("jdbc:sqldroid:/sdcard/osmdata.sqlite");
 
-
 Reader reader = new Reader();
 //read input file to output database
 reader.read("/sdcard/delaware-latest.osm.bz2", con);
 
 ````
+
 Once this process is complete, you'll have yourself a database that's easy to query
 
 ## How to query for POIs, Street names, City/Town/State names, etc
