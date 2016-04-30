@@ -25,6 +25,7 @@ Apache Software License v2.0
 
 Edit your $rootDir/build.gradle, add under allProjects, repositories, add mavenLocal()
 Edit your app/module's build.gradle file and add
+
 ````
 //Android only
 compile ('org.osmdroid.reader:osm-reader-lib:1.0.0-SNAPSHOT'){
@@ -34,7 +35,11 @@ compile 'org.sqldroid:sqldroid:1.0.3'
 
 //Java JRE/JDK only
 compile 'org.osmdroid.reader:osm-reader-lib:1.0.0-SNAPSHOT'
+````
 
+## Sample code - Importing the data
+
+````
 //needed on android only
 DriverManager.registerDriver((Driver) (Class.forName(
         "org.sqldroid.SQLDroidDriver" , true,
@@ -47,7 +52,7 @@ reader.read("/sdcard/delaware-latest.osm.bz2", con);
 
 ````
 
-Once this process is complete, you'll have yourself a database that's easy to query
+Once this process is complete, you'll have yourself a database that's easy to query. It can take a very long time on a smart phone or tablet.
 
 ## How to query for POIs, Street names, City/Town/State names, etc
 
