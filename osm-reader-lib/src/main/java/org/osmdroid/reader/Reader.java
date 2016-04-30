@@ -504,7 +504,7 @@ public class Reader {
             //if (batchCount == 100) {
             //connection.commit();
             //  long txPerSecond = (System.currentTimeMillis() - btime);
-            System.out.println(System.currentTimeMillis() + " commit! total elements processed " + recordCount + " inserts " + inserts + " stack " + xpath.size());
+            System.out.println((start-System.currentTimeMillis()) + " total elements processed " + recordCount + " inserts " + inserts + " stack " + xpath.size());
 
             //batchCount = 0;
             //System.gc();
@@ -517,14 +517,20 @@ public class Reader {
     }
 
     public static void main(String[] args) throws Exception {
+        if (args.length!=2){
+            System.out.println("Usage");
+            System.out.println("<input .bz2 file> <output.sqlite file>");
+            return;
+        }
         //2010-03-16T11:47:08Z
-
         //java.util.Date parse = sdf.parse("2010-03-16T11:47:08Z");
         //System.out.println(parse.toString());
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:osmdata3.sqlite");
 
-        //args[0]
-        new Reader().read("delaware-latest.osm.bz2", connection);
+
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:" + args[1]);
+
+        // delaware-latest.osm.bz2"
+        new Reader().read(args[0], connection);
     }
 
 

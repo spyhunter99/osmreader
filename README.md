@@ -72,9 +72,10 @@ probably don't care who edited what and when. This is a future optimization we c
 
 ## How long does it take to import
 
-Processing time on 
-Android - Galaxy S5  - close to an hour
-i7 Quadcore with SSD - 1279150ms or about 21 minutes
+Processing time on :
+
+* i7 Quadcore with SSD - 1279150ms or about 21 minutes
+* Android - Galaxy S5  - a long long time, 
 
 # Credits
 
