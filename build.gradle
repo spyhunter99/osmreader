@@ -1,0 +1,32 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+        maven { url "http://repo.maven.apache.org/maven2" }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.0-alpha5'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "http://repo.maven.apache.org/maven2" }
+    }
+    // NOTE: project.group and project.version must be defined before including
+    // maven-support.gradle since it uses these values...
+    project.group = ( project.hasProperty('pom.groupId')
+            ? project.property('pom.groupId') : "" )
+
+    project.version =
+            ( project.hasProperty('pom.version') ? project.property('pom.version') : "1.0" )
+
+    apply from: 'https://raw.githubusercontent.com/chrisdoyle/gradle-fury/master/gradle/maven-support.gradle'
+
+}

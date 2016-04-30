@@ -1,0 +1,2 @@
+include ':OsmReaderExampleApp'
+include ':osm-reader-lib'

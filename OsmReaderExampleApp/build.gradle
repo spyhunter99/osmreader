@@ -1,0 +1,27 @@
+apply plugin: 'com.android.application'
+
+apply from: 'https://raw.githubusercontent.com/chrisdoyle/gradle-fury/master/gradle/android-support.gradle'
+android {
+
+    defaultConfig {
+        applicationId "org.osmdroid.reader.example"
+
+    }
+
+    packagingOptions {
+        exclude 'META-INF/services/javax.xml.stream.XMLOutputFactory'
+        exclude 'META-INF/services/javax.xml.stream.XMLEventFactory'
+        exclude 'META-INF/services/javax.xml.stream.XMLInputFactory'
+    }
+
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile (project(":osm-reader-lib")){
+        exclude group: 'org.xerial'
+    }
+    compile 'org.sqldroid:sqldroid:1.0.3'
+    testCompile 'junit:junit:4.12'
+}
