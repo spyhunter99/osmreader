@@ -1,15 +1,24 @@
 apply plugin: 'java'
-
+apply plugin: 'application'
+apply plugin: 'distribution'
 sourceCompatibility = 1.5
 targetCompatibility = 1.5
 
 
-
+mainClassName = "org.osmdroid.reader.Reader"
 dependencies {
     compile 'xmlpull:xmlpull:1.1.3.1'
-
     compile group: 'org.xerial', name: 'sqlite-jdbc', version:'3.8.7'
-    //compile group: 'com.fasterxml', name: 'aalto-xml', version:'0.9.11'
-    //compile group: 'com.fasterxml.woodstox', name: 'woodstox-core', version:'5.0.1'
-    compile group: 'org.apache.commons', name: 'commons-compress', version:'1.9'
+//    compile group: 'org.apache.commons', name: 'commons-compress', version:'1.9'
+  //  compile 'org.apache.commons:commons-compress:1.11'
+
+    //jre/jdk only
+    //compile 'net.sf.kxml:kxml2:2.3.0'
+    compile 'org.ogce:xpp3:1.1.6'
+
+    compile 'commons-io:commons-io:2.5'
+
+    compile 'org.apache.commons:commons-compress:1.11'
+
+
 }

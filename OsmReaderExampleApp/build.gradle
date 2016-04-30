@@ -21,7 +21,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile (project(":osm-reader-lib")){
         exclude group: 'org.xerial'
+        exclude group: 'net.sf.kxml'
+        exclude group: 'org.ogce'
     }
     compile 'org.sqldroid:sqldroid:1.0.3'
-    testCompile 'junit:junit:4.12'
+    //testCompile 'junit:junit:4.12'
 }

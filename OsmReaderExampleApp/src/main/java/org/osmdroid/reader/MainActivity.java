@@ -23,19 +23,27 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     DriverManager.registerDriver((Driver) (Class.forName(
-                            "org.sqldroid.SQLDroidDriver" , true,
+                             "org.sqldroid.SQLDroidDriver" , true,
                             getClass().getClassLoader()).newInstance()));
                     Connection con = DriverManager.getConnection("jdbc:sqldroid:/sdcard/osmdata3.sqlite");
 
+                    final long now = System.currentTimeMillis();
 
                     new Reader().read("/sdcard/delaware-latest.osm.bz2", con);
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "success "+(System.currentTimeMillis()-now), Toast.LENGTH_LONG).show();
                         }
                     });
+                    System.out.println("successful import "+(System.currentTimeMillis()-now));
+                    System.out.println("successful import "+(System.currentTimeMillis()-now));
+                    System.out.println("successful import "+(System.currentTimeMillis()-now));
+                    System.out.println("successful import "+(System.currentTimeMillis()-now));
+                    System.out.println("successful import "+(System.currentTimeMillis()-now));
+                    System.out.println("successful import "+(System.currentTimeMillis()-now));
+                    System.out.println("successful import "+(System.currentTimeMillis()-now));
                 }catch (final Exception e){
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {

@@ -58,6 +58,24 @@ Once this process is complete, you'll have yourself a database that's easy to qu
 
 TODO
 
+## How much space do I need?
+
+The smalled osm extract is for the state of Delaware, USA. Compressed, it's only 11MB and 6,119,683 
+xml elements which translates to about 1,940,469 database rows. Uncompressed XML is around 150MB.
+In database format, it takes about 100 MB or about 10x whatever the download size is. The whole planet
+is around 50GB right now, which means you'd need 500GB of disk storage
+
+## Can we reduce the storage need?
+
+What data is needed is up to the use case. If you're just using this tool for reverse geocoding, you 
+probably don't care who edited what and when. This is a future optimization we could do (pull requests welcome!) 
+
+## How long does it take to import
+
+Processing time on 
+Android - Galaxy S5  - close to an hour
+i7 Quadcore with SSD - 1279150ms or about 21 minutes
+
 # Credits
 
 Thanks to https://github.com/chrisdoyle/gradle-fury/ for making Gradle easier to work with.
