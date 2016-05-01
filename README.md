@@ -75,7 +75,11 @@ probably don't care who edited what and when. This is a future optimization we c
 Processing time on :
 
 * i7 Quadcore with SSD - 1279150ms or about 21 minutes
-* Android - Galaxy S5  - a long long time, 
+* Android - Galaxy S5  - a long long time
+
+Estimate on the whole planet?
+
+50GB = about 66 days on the same computer
 
 # Credits
 
