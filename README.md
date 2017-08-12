@@ -58,12 +58,16 @@ Once this process is complete, you'll have yourself a database that's easy to qu
 
 TODO
 
+## Where do i get the data from?
+
+Try this source: https://download.geofabrik.de/ You want the `.osm.bz2` files.
+
 ## How much space do I need?
 
 The smalled osm extract is for the state of Delaware, USA. Compressed, it's only 11MB and 6,119,683 
 xml elements which translates to about 1,940,469 database rows. Uncompressed XML is around 150MB.
 In database format, it takes about 100 MB or about 10x whatever the download size is. The whole planet
-is around 50GB right now, which means you'd need 500GB of disk storage
+is around 50GB right now, which means you'd need 500GB of disk storage for the planet.
 
 ## Can we reduce the storage need?
 

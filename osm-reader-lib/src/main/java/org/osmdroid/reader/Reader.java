@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import javax.xml.stream.events.XMLEvent;
 
 /**
  * to get a reverse geocode name to lat,lon
