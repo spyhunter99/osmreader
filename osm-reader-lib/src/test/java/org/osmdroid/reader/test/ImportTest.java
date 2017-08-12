@@ -44,5 +44,9 @@ public class ImportTest {
     public void testQuery() throws Exception {
          List<SearchResults> searchResults = QueryTools.reverseGeocode("new castle", 10, 0, connection);
          Assert.assertTrue(!searchResults.isEmpty());
+         for (int i=0; i < searchResults.size(); i++) {
+             SearchResults record = searchResults.get(i);
+             System.out.println(record.getName() + " " + searchResults.get(i).getType() + " " + searchResults.get(i).getLat() + "," + searchResults.get(i).getLon());
+         }
      }
 }

@@ -64,8 +64,8 @@ Try this source: https://download.geofabrik.de/ You want the `.osm.bz2` files.
 
 ## How much space do I need?
 
-The smalled osm extract is for the state of Delaware, USA. Compressed, it's only 11MB and 6,119,683 
-xml elements which translates to about 1,940,469 database rows. Uncompressed XML is around 150MB.
+The smalled osm extract is for the state of Delaware, USA. Compressed, it's only 11MB and 7,564,957
+xml elements which translates to about 2,483,857 database rows (with ways and relations). Uncompressed XML is around 150MB.
 In database format, it takes about 100 MB or about 10x whatever the download size is. The whole planet
 is around 50GB right now, which means you'd need 500GB of disk storage for the planet.
 
@@ -78,11 +78,11 @@ probably don't care who edited what and when. This is a future optimization we c
 
 Processing time on :
 
-| Implementation | CPU | Data set | Time
+| Implementation | CPU | Data set | Time wo/Ways & Relations | Time w/Ways & Relations
 | -------------- | --- | -------- | ----- |
-| Single threaded pull parser | AMD 8 core  with SSD | Delaware | about 6 hours, excluding ways
+| Single threaded pull parser | AMD 8 core  with SSD | Delaware | 5 minutes | 3 minutes
 | Android | Galaxy S5  | Delaware | a long long time
-| Single threaded pull parser | i7 Quadcore with SSD | Planet | about 66 days (est)
+| Single threaded pull parser | AMD 8 core  with SSD | Planet | about 66 days (est)
 
 
 # Credits

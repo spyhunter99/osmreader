@@ -50,7 +50,6 @@ static final    NumberFormat formatter = new DecimalFormat("#0.00");
                         double percentDone =  iOsmReader.getProgress();
                         long totalEstimatedTimeMs = (long)(((double)elapsedTime/percentDone) * 100d);
                         String readable = toHumanReadableDuration(totalEstimatedTimeMs);
-
                         System.out.println(elapsedTime + " status " + formatter.format(percentDone) + "% complete. Est time remaining: " + readable);
                         Thread.sleep(1000);
                     } catch (Exception e) {
@@ -62,6 +61,7 @@ static final    NumberFormat formatter = new DecimalFormat("#0.00");
         // delaware-latest.osm.bz2"
         Set<Short> opts = new HashSet<Short>();
         //opts.add(ImportOptions.INCLUDE_RELATIONS);
+        //  opts.add(ImportOptions.INCLUDE_WAYS);
         iOsmReader.setOptions(opts);
         iOsmReader .read(new File(args[0]), connection);
         running=false;
