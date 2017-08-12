@@ -1,12 +1,14 @@
 package org.osmdroid.reader;
 
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import org.osmdroid.reader.example.R;
+import org.osmdroid.reader.readers.OsmPullParserReader;
+import org.osmdroid.reader.readers.OsmReaderFactory;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -29,7 +31,10 @@ public class MainActivity extends AppCompatActivity {
 
                     final long now = System.currentTimeMillis();
 
-                    new Reader().read("/sdcard/delaware-latest.osm.bz2", con);
+                    //TODO progress/notification bar that polls the reader
+
+                    OsmReaderFactory.getNewReader().read(new File("/sdcard/delaware-latest.osm.bz2"), con);
+                    DBUtils.safeClose(con);
 
                     runOnUiThread(new Runnable() {
                         @Override

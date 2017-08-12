@@ -78,13 +78,13 @@ probably don't care who edited what and when. This is a future optimization we c
 
 Processing time on :
 
-* i7 Quadcore with SSD - 1279150ms or about 21 minutes
-* Android - Galaxy S5  - a long long time
+| Implementation | CPU | Data set | Time
+| -------------- | --- | -------- | ----- |
+| Single threaded pull parser | AMD 8 core  with SSD | Delaware | about 6 hours, excluding ways
+| Android | Galaxy S5  | Delaware | a long long time
+| Single threaded pull parser | i7 Quadcore with SSD | Planet | about 66 days (est)
 
-Estimate on the whole planet?
-
-50GB = about 66 days on the same computer
 
 # Credits
 
-Thanks to https://github.com/chrisdoyle/gradle-fury/ for making Gradle easier to work with.
+Thanks to https://github.com/gradle-fury/gradle-fury/ for making Gradle easier to work with.
