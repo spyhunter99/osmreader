@@ -30,8 +30,10 @@ dependencies {
         exclude group: 'org.ogce'
         exclude group: 'xerces'
         exclude group: 'commons-logging'
+        exclude group: 'org.xerial'
     }
 
+    compile 'org.sqldroid:sqldroid:1.0.3'
 
 
     //crash logging

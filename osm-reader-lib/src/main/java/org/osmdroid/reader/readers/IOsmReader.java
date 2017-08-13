@@ -1,5 +1,7 @@
 package org.osmdroid.reader.readers;
 
+import org.osmdroid.reader.model.ImportOptions;
+
 import java.io.File;
 import java.sql.Connection;
 import java.util.Set;
@@ -30,5 +32,14 @@ public interface IOsmReader {
 
     String getParserName();
 
+    /**
+     * Import options, skip the stuff you don't need
+     * @see ImportOptions
+     * @param options
+     */
     void setOptions(Set<Short> options);
+
+    long getInserts();
+    long getRecordsProcessed();
+    void setBatchSize(int size);
 }

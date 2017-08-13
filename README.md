@@ -78,11 +78,12 @@ probably don't care who edited what and when. This is a future optimization we c
 
 Processing time on :
 
-| Implementation | CPU | Data set | Time wo/Ways & Relations | Time w/Ways & Relations
-| -------------- | --- | -------- | ----- | --- |
-| Single threaded pull parser | AMD 8 core  with SSD | Delaware | 5 minutes | 3 minutes
-| Android | Galaxy S5  | Delaware | 20 minutes | pending
-| Single threaded pull parser | AMD 8 core  with SSD | Planet | about 66 days (est)
+| Implementation | CPU | Data set | Batch Size | Time wo/Ways & Relations | Time w/Ways & Relations
+| -------------- | --- | -------- | ---------- | ------------------------ | ----------------------- |
+| XML pull parser | AMD 8 core  with SSD | Delaware.bz2 | 500 | n/a | 102 sec
+| Osmosis | AMD 8 core  with SSD | Delaware.bz2 | 500 | n/a | 83 sec
+| XML pull parser | Galaxy S5  | Delaware.bz2 | pending | pending  | pending
+| XML pull parser | AMD 8 core  with SSD | Planet | 500 | about 66 days (est) |
 
 
 # Credits

@@ -1,5 +1,6 @@
 package org.osmdroid.reader;
 
+import org.osmdroid.reader.model.Address;
 import org.osmdroid.reader.model.OsmType;
 import org.osmdroid.reader.model.SearchResults;
 import org.osmdroid.reader.readers.OsmPullParserReader;
@@ -27,6 +28,80 @@ public class QueryTools {
     public static List<SearchResults> search(String searchQueryOptional, int limit, int offset, Connection con, double lat, double lon, double radiusDistanceInMeters) {
 
         throw new IllegalArgumentException("no supported yet");
+    }
+
+    /**
+     * returns (if available) the street or mailing address of the given entity, usually a node
+     *
+     * @param databaseId
+     * @param con
+     * @return
+     * @throws Exception
+     */
+    public static Address getAddress(long databaseId, Connection con) throws Exception {
+        ResultSet rs = null;
+        Address r = new Address();
+
+        PreparedStatement cmd = null;
+        try {
+            cmd = con.prepareStatement("SELECT k,v FROM tag where id=?");
+            cmd.setLong(1, databaseId);
+
+            rs = cmd.executeQuery();
+            while (rs.next()) {
+                if ("phone".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setPhone(rs.getString("v"));
+                } else if ("contact:phone".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setPhone(rs.getString("v"));
+                } else if ("website".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setWebsite(rs.getString("v"));
+                } else if ("contact:website".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setWebsite(rs.getString("v"));
+                } else if ("note:website".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setWebsite(rs.getString("v"));
+                } else if ("incorporation:website".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setWebsite(rs.getString("v"));
+                } else if ("addr:city".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_city(rs.getString("v"));
+                } else if ("addr:state".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_state(rs.getString("v"));
+                } else if ("addr:housenumber".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_housenumber(rs.getString("v"));
+                } else if ("source:addr:housenumber".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_housenumber(rs.getString("v"));
+                } else if ("addr:housename".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_housename(rs.getString("v"));
+                } else if ("addr:postcode".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_postcode(rs.getString("v"));
+                } else if ("gnis:county_name".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_county(rs.getString("v"));
+                } else if ("addr:county".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_county(rs.getString("v"));
+                } else if ("addr:street".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_street(rs.getString("v"));
+                } else if ("street:addr".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_street(rs.getString("v"));
+                } else if ("addr:unit".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_unit(rs.getString("v"));
+                } else if ("addr:street_1".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_street_1(rs.getString("v"));
+                } else if ("addr:street_2".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_street_2(rs.getString("v"));
+                } else if ("addr:street_3".equalsIgnoreCase(rs.getString("k"))) {
+                    r.setAddr_street_3(rs.getString("v"));
+                }
+
+
+            }
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            DBUtils.safeClose(rs);
+            DBUtils.safeClose(cmd);
+            rs = null;
+            cmd = null;
+        }
+        return r;
     }
 
     /**

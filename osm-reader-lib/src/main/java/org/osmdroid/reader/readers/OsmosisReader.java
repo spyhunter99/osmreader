@@ -39,25 +39,29 @@ import java.util.logging.Logger;
 public class OsmosisReader implements IOsmReader, Sink {
     private static final Logger LOG = Logger.getLogger(OsmosisReader.class.getName());
 
-    public static final String USER = "user";
-    public static final String UID = "uid";
-    public static final String CHANGESET = "changeset";
-    public static final String VERSION = "version";
-    public static final String TIMESTAMP = "timestamp";
-    public static final String NODE = "node";
-    public static final String RELATION = "relation";
-    public static final String TAG = "tag";
-    public static final String WAY = "way";
-    public static final String MEMBER = "member";
-    public static final String ID = "id";
-    public static final String LAT = "lat";
-    public static final String LON = "lon";
-    public static final String BOUNDS = "bounds";
-    public static final String OSM = "osm";
 
+    long inserts = 0;
 
-    static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
+    private boolean isReading = false;
+    private long recordCount = 0;
+    private long inputFileSize = 0;
+    private Set<Short> options = new HashSet<Short>();
+    private boolean hasNodes = false;
+    private boolean hasRelationMembers = false;
+    private boolean hasRelations = false;
+    private boolean hasTags = false;
+    private boolean hasWayNo = false;
+    private boolean hasWays = false;
+    private PreparedStatement INSERT_NODES;
+    private PreparedStatement INSERT_RELATIONS;
+    private PreparedStatement INSERT_WAYS;
+    private PreparedStatement INSERT_TAG;
+    private PreparedStatement INSERT_WAY_NO;
+    private PreparedStatement INSERT_RELATION_MEMBER;
+    private Connection connection;
+    private long batchCount = 0;
+    private int BATCH_SIZE = 100;
+    private boolean isPbf=false;
 
     /**
      * gets at estimate for completion.
@@ -67,53 +71,34 @@ public class OsmosisReader implements IOsmReader, Sink {
     @Override
     public double getProgress() {
         if (isReading) {
-            //delaware has 11000000 bytes
-            //with 6119693 xml elements
-            long expectedRecordCount = (long) (double) ((double) inputFileSize * 6119693d / 11000000d);
+            if (!isPbf) {
+                //delaware has 14496587 bytes
+                //with 2483857 inserts
+                long expectedRecordCount = (long) (double) ((double) inputFileSize * 2483857d / 14496587d);
 
-            double value = (((double) recordCount) / expectedRecordCount) * 100d;
+                double value = (((double) inserts) / expectedRecordCount) * 100d;
 
-            return value;
+                return value;
+            } else {
+                //it is pbf, calculations are different
+                //delaware has 8886692  bytes
+                //with 2483857 expected inserts
+                long expectedRecordCount = (long) (double) ((double) inputFileSize * 2483857d / 8886692d);
+
+                double value = (((double) inserts) / expectedRecordCount) * 100d;
+
+                return value;
+            }
 
         }
         return -1;
     }
 
-
-    private boolean isReading = false;
-    private long recordCount = 0;
-    private long inputFileSize = 0;
-    private Set<Short> options = new HashSet<Short>();
-
-    boolean hasNodes = false;
-    boolean hasRelationMembers = false;
-    boolean hasRelations = false;
-    boolean hasTags = false;
-    boolean hasWayNo = false;
-    boolean hasWays = false;
-    long inserts = 0;
-
-
-    PreparedStatement INSERT_NODES;
-
-    PreparedStatement INSERT_RELATIONS;
-
-    PreparedStatement INSERT_WAYS;
-
-    PreparedStatement INSERT_TAG;
-
-    PreparedStatement INSERT_WAY_NO;
-
-    PreparedStatement INSERT_RELATION_MEMBER;
-
-    Connection connection;
-    long batchCount = 0;
-    final int BATCH_SIZE = 100;
-
-
     @Override
-    public synchronized void read(File path, Connection connection) throws Exception {
+    public void read(File path, Connection connection) throws Exception {
         File file = path; // the input file
+        if (file.getName().toLowerCase().endsWith(".pbf"))
+            isPbf=true;
 
         long start = System.currentTimeMillis();
         if (path == null)
@@ -122,49 +107,54 @@ public class OsmosisReader implements IOsmReader, Sink {
             throw new FileNotFoundException("File Not Found");
         inputFileSize = path.length();
 
-        PreparedStatement p;
+        PreparedStatement p = null;
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS \"nodes\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"lat\" DOUBLE NOT NULL , \"lon\" DOUBLE NOT NULL , \"version\" INTEGER, \"timestamp\" DATETIME, \"uid\" INTEGER, \"user\" TEXT, \"changeset\" INTEGER)");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"relation_members\" (\"type\" TEXT NOT NULL , \"ref\" INTEGER NOT NULL , \"role\" TEXT, \"id\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL )");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"relations\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"user\" TEXT, \"uid\" INTEGER, \"version\" INTEGER, \"changeset\" INTEGER, \"timestamp\" BIGINT)");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"tag\" (\"id\" INTEGER NOT NULL , \"k\" TEXT NOT NULL , \"v\" TEXT NOT NULL , \"reftype\" INTEGER NOT NULL  DEFAULT -1, PRIMARY KEY( \"reftype\",\"k\" ,\"id\" )   )");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"way_no\" (\"way_id\" INTEGER NOT NULL , \"node_id\" INTEGER NOT NULL, PRIMARY KEY (\"way_id\", \"node_id\")  )  ");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"ways\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"changeset\" INTEGER, \"version\" INTEGER, \"user\" TEXT, \"uid\" INTEGER, \"timestamp\" BIGINT)");
             p.execute();
-            p.close();
-
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
 
         INSERT_NODES = connection.prepareStatement("INSERT OR REPLACE INTO nodes (id,changeset,version,user,uid,timestamp,lat,lon) "
@@ -218,9 +208,19 @@ public class OsmosisReader implements IOsmReader, Sink {
             reader = new XmlReader(file, false, compression);
         }
 
+
         reader.setSink(this);
 
+        System.out.println("starting import");
         Thread readerThread = new Thread(reader);
+        readerThread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable throwable) {
+                System.out.println("import failed!");
+                throwable.printStackTrace();
+
+            }
+        });
         readerThread.start();
 
         while (readerThread.isAlive()) {
@@ -231,6 +231,7 @@ public class OsmosisReader implements IOsmReader, Sink {
             }
         }
 
+        System.out.println("import finished");
 
         checkCommit(true);
 
@@ -347,7 +348,23 @@ public class OsmosisReader implements IOsmReader, Sink {
     }
 
     @Override
+    public long getInserts() {
+        return inserts;
+    }
+
+    @Override
+    public long getRecordsProcessed() {
+        return recordCount;
+    }
+
+    @Override
+    public void setBatchSize(int size) {
+        this.BATCH_SIZE = size;
+    }
+
+    @Override
     public void process(EntityContainer entityContainer) {
+        recordCount++;
         Entity entity = entityContainer.getEntity();
         if (entity instanceof Node) {
             //do something with the node
@@ -365,6 +382,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                         hasTags = true;
                         inserts++;
                         batchCount++;
+                        checkCommit(false);
                     } catch (Exception ex) {
                         System.out.println(INSERT_TAG.toString());
                         ex.printStackTrace();
@@ -385,6 +403,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                 hasNodes = true;
                 inserts++;
                 batchCount++;
+                checkCommit(false);
             } catch (Exception ex) {
                 System.out.println(INSERT_NODES.toString());
                 ex.printStackTrace();
@@ -407,6 +426,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                             hasTags = true;
                             inserts++;
                             batchCount++;
+                            checkCommit(false);
                         } catch (Exception ex) {
                             System.out.println(INSERT_TAG.toString());
                             ex.printStackTrace();
@@ -425,6 +445,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                     hasWays = true;
                     inserts++;
                     batchCount++;
+                    checkCommit(false);
                 } catch (Exception ex) {
                     System.out.println(INSERT_WAYS.toString());
                     ex.printStackTrace();
@@ -444,6 +465,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                             batchCount++;
                             hasWayNo = true;
                             inserts++;
+                            checkCommit(false);
                         } catch (Exception ex) {
                             System.out.println(INSERT_WAY_NO.toString());
                             ex.printStackTrace();
@@ -469,6 +491,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                             hasTags = true;
                             inserts++;
                             batchCount++;
+                            checkCommit(false);
                         } catch (Exception ex) {
                             System.out.println(INSERT_TAG.toString());
                             ex.printStackTrace();
@@ -488,6 +511,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                     hasRelations = true;
                     batchCount++;
                     inserts++;
+                    checkCommit(false);
                 } catch (Exception ex) {
                     System.out.println(INSERT_RELATIONS.toString());
                     ex.printStackTrace();
@@ -508,6 +532,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                             hasRelationMembers = true;
                             inserts++;
                             batchCount++;
+                            checkCommit(false);
                         } catch (Exception ex) {
                             System.out.println(INSERT_RELATION_MEMBER.toString());
                             ex.printStackTrace();
@@ -517,7 +542,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                 }
             }
         }
-        checkCommit(false);
+
     }
 
     private int translate(EntityType type) {

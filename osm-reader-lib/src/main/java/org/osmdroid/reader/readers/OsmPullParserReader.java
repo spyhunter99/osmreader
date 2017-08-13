@@ -58,11 +58,9 @@ public class OsmPullParserReader implements IOsmReader {
     public static final String LON = "lon";
     public static final String BOUNDS = "bounds";
     public static final String OSM = "osm";
-
-
-    static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-
-
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private int BATCH_SIZE = 0;
+    private long inserts = 0;
     private boolean isReading = false;
     private long recordCount = 0;
     private long inputFileSize = 0;
@@ -76,16 +74,17 @@ public class OsmPullParserReader implements IOsmReader {
     public double getProgress() {
         if (isReading) {
             //delaware has 11000000 bytes
-            //with 6119693 xml elements
-            long expectedRecordCount = (long) (double) ((double) inputFileSize * 6119693d / 11000000d);
+            //with 2483857 expected inserts
+            long expectedRecordCount = (long) (double) ((double) inputFileSize * 2483857d / 11000000d);
 
-            double value = (((double) recordCount) / expectedRecordCount) * 100d;
+            double value = (((double) inserts) / expectedRecordCount) * 100d;
 
             return value;
 
         }
         return -1;
     }
+
 
     /**
      * imports the osm bz2 file into the database
@@ -101,49 +100,55 @@ public class OsmPullParserReader implements IOsmReader {
         if (!path.exists())
             throw new FileNotFoundException("File Not Found");
         inputFileSize = path.length();
-        PreparedStatement p;
+        PreparedStatement p = null;
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS \"nodes\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"lat\" DOUBLE NOT NULL , \"lon\" DOUBLE NOT NULL , \"version\" INTEGER, \"timestamp\" DATETIME, \"uid\" INTEGER, \"user\" TEXT, \"changeset\" INTEGER)");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"relation_members\" (\"type\" TEXT NOT NULL , \"ref\" INTEGER NOT NULL , \"role\" TEXT, \"id\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL )");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"relations\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"user\" TEXT, \"uid\" INTEGER, \"version\" INTEGER, \"changeset\" INTEGER, \"timestamp\" BIGINT)");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"tag\" (\"id\" INTEGER NOT NULL , \"k\" TEXT NOT NULL , \"v\" TEXT NOT NULL , \"reftype\" INTEGER NOT NULL  DEFAULT -1, PRIMARY KEY( \"reftype\",\"k\" ,\"id\" )   )");
             p.execute();
-            p.close();
+            p.execute();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"way_no\" (\"way_id\" INTEGER NOT NULL , \"node_id\" INTEGER NOT NULL, PRIMARY KEY (\"way_id\", \"node_id\")  )  ");
             p.execute();
-            p.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
         try {
             p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"ways\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"changeset\" INTEGER, \"version\" INTEGER, \"user\" TEXT, \"uid\" INTEGER, \"timestamp\" BIGINT)");
             p.execute();
-            p.close();
-
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            DBUtils.safeClose(p);
         }
 
         BufferedReader xmlInputStream = DBUtils.getBufferedReaderForBZ2File(path);
@@ -166,11 +171,11 @@ public class OsmPullParserReader implements IOsmReader {
         long version = -1;
         String user = "";
         long uid = -1;
-        long inserts = 0;
+
+        inserts = 0;
         String key = "";
         String val = "";
 
-        final int BATCH_SIZE = 100;
 
         connection.setAutoCommit(false);
 
@@ -192,8 +197,6 @@ public class OsmPullParserReader implements IOsmReader {
 
         final PreparedStatement INSERT_RELATION_MEMBER = connection.prepareStatement("INSERT OR REPLACE INTO relation_members (id,type,ref,role) "
             + "VALUES (?,?,?,?); ");
-
-
 
 
         Date timestamp = new Date(System.currentTimeMillis());
@@ -747,6 +750,21 @@ public class OsmPullParserReader implements IOsmReader {
 
         this.options.clear();
         this.options.addAll(options);
+    }
+
+    @Override
+    public long getInserts() {
+        return inserts;
+    }
+
+    @Override
+    public long getRecordsProcessed() {
+        return recordCount;
+    }
+
+    @Override
+    public void setBatchSize(int size) {
+        BATCH_SIZE = size;
     }
 
 

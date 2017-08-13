@@ -46,9 +46,14 @@ static final    NumberFormat formatter = new DecimalFormat("#0.00");
                 System.out.println((System.currentTimeMillis() - start) + " status " + iOsmReader.getProgress() + "% complete");
                 while (running) {
                     try {
+
+                        //it took us this long
                         long elapsedTime = (System.currentTimeMillis() - start);
+                        //to get this far into the file
                         double percentDone =  iOsmReader.getProgress();
-                        long totalEstimatedTimeMs = (long)(((double)elapsedTime/percentDone) * 100d);
+
+                        //guestimate time remaining
+                        long totalEstimatedTimeMs = (long)((elapsedTime/percentDone) * (100-percentDone));
                         String readable = toHumanReadableDuration(totalEstimatedTimeMs);
                         System.out.println(elapsedTime + " status " + formatter.format(percentDone) + "% complete. Est time remaining: " + readable);
                         Thread.sleep(1000);
