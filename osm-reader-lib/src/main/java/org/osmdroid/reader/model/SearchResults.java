@@ -12,6 +12,7 @@ public class SearchResults {
     private double lon;
     private String name;
     private OsmType type;
+    private long databaseId;
 
     public double getLat() {
         return lat;
@@ -43,5 +44,13 @@ public class SearchResults {
 
     public void setType(OsmType type) {
         this.type = type;
+    }
+
+    public long getDatabaseId() {
+        return databaseId;
+    }
+
+    public void setDatabaseId(long databaseId) {
+        this.databaseId = databaseId;
     }
 }

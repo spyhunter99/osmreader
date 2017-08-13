@@ -117,7 +117,7 @@ public class OsmPullParserReader implements IOsmReader {
             ex.printStackTrace();
         }
         try {
-            p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"relations\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"user\" TEXT, \"uid\" INTEGER, \"version\" INTEGER, \"changeset\" INTEGER, \"timestamp\" DATETIME)");
+            p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"relations\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"user\" TEXT, \"uid\" INTEGER, \"version\" INTEGER, \"changeset\" INTEGER, \"timestamp\" BIGINT)");
             p.execute();
             p.close();
         } catch (Exception ex) {
@@ -138,7 +138,7 @@ public class OsmPullParserReader implements IOsmReader {
             ex.printStackTrace();
         }
         try {
-            p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"ways\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"changeset\" INTEGER, \"version\" INTEGER, \"user\" TEXT, \"uid\" INTEGER, \"timestamp\" DATETIME)");
+            p = connection.prepareStatement("CREATE TABLE IF NOT EXISTS  \"ways\" (\"id\" INTEGER PRIMARY KEY  NOT NULL , \"changeset\" INTEGER, \"version\" INTEGER, \"user\" TEXT, \"uid\" INTEGER, \"timestamp\" BIGINT)");
             p.execute();
             p.close();
 
@@ -172,24 +172,29 @@ public class OsmPullParserReader implements IOsmReader {
 
         final int BATCH_SIZE = 100;
 
-        final PreparedStatement INSERT_NODES = connection.prepareStatement("INSERT INTO nodes (id,changeset,version,user,uid,timestamp,lat,lon) "
+        connection.setAutoCommit(false);
+
+        final PreparedStatement INSERT_NODES = connection.prepareStatement("INSERT OR REPLACE INTO nodes (id,changeset,version,user,uid,timestamp,lat,lon) "
             + "VALUES (?,?,?,?, ?,?,?,?); ");
         connection.setAutoCommit(false);
 
-        final PreparedStatement INSERT_RELATIONS = connection.prepareStatement("INSERT INTO relations (id,changeset,version,user,uid,timestamp) "
+        final PreparedStatement INSERT_RELATIONS = connection.prepareStatement("INSERT OR REPLACE INTO relations (id,changeset,version,user,uid,timestamp) "
             + "VALUES (?,?,?,?,?,?); ");
 
-        final PreparedStatement INSERT_WAYS = connection.prepareStatement("INSERT INTO ways (id,changeset,version,user,uid,timestamp) "
+        final PreparedStatement INSERT_WAYS = connection.prepareStatement("INSERT OR REPLACE INTO ways (id,changeset,version,user,uid,timestamp) "
             + "VALUES (?,?,?,?,?,?); ");
 
-        final PreparedStatement INSERT_TAG = connection.prepareStatement("INSERT INTO tag (id,k,v,reftype) "
+        final PreparedStatement INSERT_TAG = connection.prepareStatement("INSERT OR REPLACE INTO tag (id,k,v,reftype) "
             + "VALUES (?,?,?,?); ");
 
-        final PreparedStatement INSERT_WAY_NO = connection.prepareStatement("INSERT INTO way_no (way_id,node_id) "
+        final PreparedStatement INSERT_WAY_NO = connection.prepareStatement("INSERT OR REPLACE INTO way_no (way_id,node_id) "
             + "VALUES (?,?); ");
 
-        final PreparedStatement INSERT_RELATION_MEMBER = connection.prepareStatement("INSERT INTO relation_members (id,type,ref,role) "
+        final PreparedStatement INSERT_RELATION_MEMBER = connection.prepareStatement("INSERT OR REPLACE INTO relation_members (id,type,ref,role) "
             + "VALUES (?,?,?,?); ");
+
+
+
 
         Date timestamp = new Date(System.currentTimeMillis());
 
@@ -342,7 +347,7 @@ public class OsmPullParserReader implements IOsmReader {
                                 INSERT_NODES.setLong(3, version);
                                 INSERT_NODES.setString(4, user);
                                 INSERT_NODES.setLong(5, uid);
-                                INSERT_NODES.setDate(6, timestamp);
+                                INSERT_NODES.setLong(6, timestamp.getTime());
                                 INSERT_NODES.setDouble(7, lat);
                                 INSERT_NODES.setDouble(8, lon);
                                 INSERT_NODES.addBatch();
@@ -407,7 +412,7 @@ public class OsmPullParserReader implements IOsmReader {
                                     INSERT_RELATIONS.setLong(3, version);
                                     INSERT_RELATIONS.setString(4, user);
                                     INSERT_RELATIONS.setLong(5, uid);
-                                    INSERT_RELATIONS.setDate(6, timestamp);
+                                    INSERT_RELATIONS.setLong(6, timestamp.getTime());
                                     INSERT_RELATIONS.addBatch();
                                     hasRelations = true;
                                     //INSERT_RELATIONS.clearParameters();
@@ -466,7 +471,7 @@ public class OsmPullParserReader implements IOsmReader {
                                     INSERT_WAYS.setLong(3, version);
                                     INSERT_WAYS.setString(4, user);
                                     INSERT_WAYS.setLong(5, uid);
-                                    INSERT_WAYS.setDate(6, timestamp);
+                                    INSERT_WAYS.setLong(6, timestamp.getTime());
                                     INSERT_WAYS.addBatch();
                                     hasWays = true;
                                     //INSERT_WAYS.clearParameters();

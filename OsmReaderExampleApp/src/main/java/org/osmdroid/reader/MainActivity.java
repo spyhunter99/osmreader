@@ -2,9 +2,12 @@ package org.osmdroid.reader;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.reader.example.R;
+import org.osmdroid.reader.readers.IOsmReader;
 import org.osmdroid.reader.readers.OsmPullParserReader;
 import org.osmdroid.reader.readers.OsmReaderFactory;
 
@@ -12,28 +15,85 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.osmdroid.reader.Main.formatter;
+import static org.osmdroid.reader.Main.running;
+import static org.osmdroid.reader.Main.toHumanReadableDuration;
 
 public class MainActivity extends AppCompatActivity {
-
+    boolean running = true;
+    ProgressBar bar ;
+    TextView status;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        status = (TextView) findViewById(R.id.importStatus);
+        bar = (ProgressBar) findViewById(R.id.importProgress);
+
+
+        //TODO this needs a file browser to list all bz2 files
+        //then with user selection, start the import
+        //probably should use a common database name and location to keep things simple
+        //
+
+        final IOsmReader iOsmReader = OsmReaderFactory.getNewReader();
+        final long start = System.currentTimeMillis();
+        Set<Short> opts = new HashSet<Short>();
+        //opts.add(ImportOptions.INCLUDE_RELATIONS);
+        //  opts.add(ImportOptions.INCLUDE_WAYS);
+        iOsmReader.setOptions(opts);
+
+        //this updates the UI
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("poller started");
+                System.out.println((System.currentTimeMillis() - start) + " status " + iOsmReader.getProgress() + "% complete");
+                while (running) {
+                    try {
+                        long elapsedTime = (System.currentTimeMillis() - start);
+                        final double percentDone =  iOsmReader.getProgress();
+                        long totalEstimatedTimeMs = (long)(((double)elapsedTime/percentDone) * 100d);
+                        String readable = toHumanReadableDuration(totalEstimatedTimeMs);
+                        final String msg = (elapsedTime + " status " + formatter.format(percentDone) + "% complete. Est time remaining: " + readable);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (running) {
+                                    bar.setProgress((int) percentDone);
+                                    status.setText(msg);
+                                }
+                            }
+                        });
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+
+        //this does the work
         new Thread(new Runnable() {
             @Override
             public void run() {
 
                 try {
-                    DriverManager.registerDriver((Driver) (Class.forName(
-                             "org.sqldroid.SQLDroidDriver" , true,
-                            getClass().getClassLoader()).newInstance()));
-                    Connection con = DriverManager.getConnection("jdbc:sqldroid:/sdcard/osmdata3.sqlite");
+                    boolean android = org.sqlite.util.OSInfo.isAndroid();
+
+                    DriverManager.registerDriver((Driver) Class.forName(
+                             "org.sqlite.JDBC").newInstance());
+                    //, true,getClass().getClassLoader()).newInstance()));
+                    Connection con = DriverManager.getConnection("jdbc:sqlite:/sdcard/importTest.sqlite");
 
                     final long now = System.currentTimeMillis();
 
-                    //TODO progress/notification bar that polls the reader
-
-                    OsmReaderFactory.getNewReader().read(new File("/sdcard/delaware-latest.osm.bz2"), con);
+                    iOsmReader.read(new File("/sdcard/delaware-latest.osm.bz2"), con);
+                    running=false;
                     DBUtils.safeClose(con);
 
                     runOnUiThread(new Runnable() {
@@ -42,6 +102,14 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "success "+(System.currentTimeMillis()-now), Toast.LENGTH_LONG).show();
                         }
                     });
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            status.setText("Import complete in "  + (System.currentTimeMillis()- now) + "ms");
+                        }
+                    });
+
                     System.out.println("successful import "+(System.currentTimeMillis()-now));
                     System.out.println("successful import "+(System.currentTimeMillis()-now));
                     System.out.println("successful import "+(System.currentTimeMillis()-now));
@@ -49,12 +117,23 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("successful import "+(System.currentTimeMillis()-now));
                     System.out.println("successful import "+(System.currentTimeMillis()-now));
                     System.out.println("successful import "+(System.currentTimeMillis()-now));
-                }catch (final Exception e){
+                }catch (final Throwable e){
+
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            running = false;
+                            status.setText("Import failed: " + e.getMessage());
                             Toast.makeText(MainActivity.this, "fail! " + e.toString(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } finally {
+                    running = false;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            bar.setProgress(100);
                         }
                     });
                 }

@@ -8,7 +8,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Query Tools for .osm.bz2 in sqlite format
@@ -22,9 +24,113 @@ public class QueryTools {
 
     //TODO it would be helpful to limit the search results to a bounding box
 
+    public static List<SearchResults> search(String searchQueryOptional, int limit, int offset, Connection con, double lat, double lon, double radiusDistanceInMeters) {
+
+        throw new IllegalArgumentException("no supported yet");
+    }
+
+    /**
+     * gets all tags for a given database record number
+     *
+     * @param databaseId
+     * @return
+     */
+    public static Map<String, String> getTags(long databaseId, Connection con, int limit, int offset) throws Exception {
+        Map<String, String> ret = new HashMap<String, String>();
+        ResultSet rs = null;
+
+        PreparedStatement cmd = null;
+        try {
+            cmd = con.prepareStatement("SELECT k,v FROM tag where id=? limit ? offset ?");
+            cmd.setLong(1, databaseId);
+            cmd.setInt(2, limit);
+            cmd.setInt(3, offset);
+            rs = cmd.executeQuery();
+            while (rs.next()) {
+                ret.put(rs.getString("k"), rs.getString("v"));
+            }
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            DBUtils.safeClose(rs);
+            DBUtils.safeClose(cmd);
+            rs = null;
+            cmd = null;
+        }
+        return ret;
+    }
+
+    /**
+     * for bounding box queries, useful for on searching on screen
+     *
+     * @param searchQueryOptional
+     * @param limit
+     * @param offset
+     * @param con
+     * @param maxLat
+     * @param maxLon
+     * @param minLat
+     * @param minLon
+     * @return
+     */
+    public static List<SearchResults> search(String searchQueryOptional, int limit, int offset, Connection con, double maxLat, double maxLon, double minLat, double minLon) throws Exception {
+        List<SearchResults> ret = new ArrayList<SearchResults>();
+
+        ResultSet rs = null;
+
+        PreparedStatement cmd = null;
+
+
+        try {
+
+            if (searchQueryOptional != null) {
+                cmd = con.prepareStatement("SELECT * FROM tag inner join nodes on tag.id=nodes.id where k='name' and v like ? and lat > ? and lat < ? and lon >? and lon < ? limit ? offset ?");
+                cmd.setString(1, "%" + searchQueryOptional + "%");
+                cmd.setDouble(2, minLat);
+                cmd.setDouble(3, maxLat);
+                cmd.setDouble(4, minLon);
+                cmd.setDouble(5, maxLon);
+                cmd.setInt(6, limit);
+                cmd.setInt(7, offset);
+
+            } else {
+                cmd = con.prepareStatement("SELECT * FROM tag inner join nodes on tag.id=nodes.id where k='name' and lat > ? and lat < ? and lon >? and lon < ? limit ? offset ?");
+                cmd.setDouble(1, minLat);
+                cmd.setDouble(2, maxLat);
+                cmd.setDouble(3, minLon);
+                cmd.setDouble(4, maxLon);
+                cmd.setInt(5, limit);
+                cmd.setInt(6, offset);
+            }
+
+            rs = cmd.executeQuery();
+            while (rs.next()) {
+                int type = rs.getInt("reftype");
+                OsmType rowType = OsmType.values()[type];
+                SearchResults loc = new SearchResults();
+                loc.setLat(rs.getDouble("lat"));
+                loc.setLon(rs.getDouble("lon"));
+                loc.setName(rs.getString("v"));
+                loc.setType(rowType);
+                loc.setDatabaseId(rs.getLong("id"));
+                ret.add(loc);
+            }
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            DBUtils.safeClose(rs);
+            DBUtils.safeClose(cmd);
+            rs = null;
+            cmd = null;
+        }
+        return ret;
+
+    }
+
     /**
      * searches for a set of key words and returns a search result set. The database connection
      * remains open after this call.
+     *
      * @param searchQuery
      * @param limit
      * @param offset
@@ -67,16 +173,16 @@ public class QueryTools {
                             if (rs2.next()) {
                                 nodeid = rs2.getInt(0);
                             }
-                        }catch (Exception ex) {
+                        } catch (Exception ex) {
                             throw ex;
                         } finally {
                             DBUtils.safeClose(rs2);
                             DBUtils.safeClose(cmd2);
-                            rs2=null;
-                            cmd2=null;
+                            rs2 = null;
+                            cmd2 = null;
                         }
-                        rs2=null;
-                        cmd2=null;
+                        rs2 = null;
+                        cmd2 = null;
 
                         try {
                             cmd2 = con.prepareStatement("select lat,lon from nodes where id=? limit 1");
@@ -90,15 +196,16 @@ public class QueryTools {
                                 loc.setLon(rs2.getDouble("lon"));
                                 loc.setName(rs.getString("v"));
                                 loc.setType(rowType);
+                                loc.setDatabaseId(rs.getLong("id"));
                                 ret.add(loc);
                             }
-                        }catch (Exception ex) {
+                        } catch (Exception ex) {
                             throw ex;
                         } finally {
                             DBUtils.safeClose(rs2);
                             DBUtils.safeClose(cmd2);
-                            rs2=null;
-                            cmd2=null;
+                            rs2 = null;
+                            cmd2 = null;
                         }
 
                         break;
@@ -116,15 +223,16 @@ public class QueryTools {
                                 loc.setLon(rs2.getDouble("lon"));
                                 loc.setName(rs.getString("v"));
                                 loc.setType(rowType);
+                                loc.setDatabaseId(rs.getLong("id"));
                                 ret.add(loc);
                             }
-                        }catch (Exception ex){
+                        } catch (Exception ex) {
                             throw ex;
                         } finally {
                             DBUtils.safeClose(rs2);
                             DBUtils.safeClose(cmd2);
-                            rs2=null;
-                            cmd2=null;
+                            rs2 = null;
+                            cmd2 = null;
                         }
 
 
@@ -136,17 +244,17 @@ public class QueryTools {
                         throw new IllegalArgumentException(type + " not supported");
                 }
             }
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             throw ex;
         } finally {
             DBUtils.safeClose(rs);
             DBUtils.safeClose(rs2);
             DBUtils.safeClose(cmd);
             DBUtils.safeClose(cmd2);
-            rs2=null;
-            cmd2=null;
-            rs=null;
-            cmd=null;
+            rs2 = null;
+            cmd2 = null;
+            rs = null;
+            cmd = null;
         }
         return ret;
     }

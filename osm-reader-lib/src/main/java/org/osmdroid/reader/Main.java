@@ -36,7 +36,7 @@ static final    NumberFormat formatter = new DecimalFormat("#0.00");
         }
 
         final IOsmReader iOsmReader = OsmReaderFactory.getNewReader();
-
+        Class.forName("org.sqlite.JDBC").newInstance();
         final long start = System.currentTimeMillis();
         Connection connection = DriverManager.getConnection("jdbc:sqlite:" + args[1]);
         new Thread(new Runnable() {

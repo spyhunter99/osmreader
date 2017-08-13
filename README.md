@@ -79,9 +79,9 @@ probably don't care who edited what and when. This is a future optimization we c
 Processing time on :
 
 | Implementation | CPU | Data set | Time wo/Ways & Relations | Time w/Ways & Relations
-| -------------- | --- | -------- | ----- |
+| -------------- | --- | -------- | ----- | --- |
 | Single threaded pull parser | AMD 8 core  with SSD | Delaware | 5 minutes | 3 minutes
-| Android | Galaxy S5  | Delaware | a long long time
+| Android | Galaxy S5  | Delaware | 20 minutes | pending
 | Single threaded pull parser | AMD 8 core  with SSD | Planet | about 66 days (est)
 
 
