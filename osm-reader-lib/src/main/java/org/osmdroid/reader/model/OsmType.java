@@ -7,5 +7,5 @@ package org.osmdroid.reader.model;
  */
 public enum  OsmType {
 
-    WAY, NODE, RELATION;
+    WAY, NODE, RELATION, BOUND
 }

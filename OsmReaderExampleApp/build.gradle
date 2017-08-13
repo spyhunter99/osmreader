@@ -12,6 +12,8 @@ android {
         exclude 'META-INF/services/javax.xml.stream.XMLOutputFactory'
         exclude 'META-INF/services/javax.xml.stream.XMLEventFactory'
         exclude 'META-INF/services/javax.xml.stream.XMLInputFactory'
+        exclude 'osmosis-plugins.conf'
+
     }
 
 }
@@ -26,6 +28,8 @@ dependencies {
     compile(project(":osm-reader-lib")) {
         exclude group: 'net.sf.kxml'
         exclude group: 'org.ogce'
+        exclude group: 'xerces'
+        exclude group: 'commons-logging'
     }
 
 

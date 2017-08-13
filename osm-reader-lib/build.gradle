@@ -27,5 +27,12 @@ dependencies {
     compile 'org.apache.commons:commons-compress:1.11'
     testCompile 'junit:junit:4.12'
 
+    compile group: 'org.openstreetmap.osmosis', name: 'osmosis-core', version: '0.45'
+    compile group: 'org.openstreetmap.osmosis', name: 'osmosis-pbf', version: '0.45'
+    compile group: 'org.openstreetmap.osmosis', name: 'osmosis-osm-binary', version: '0.45'
+    compile group: 'org.openstreetmap.osmosis', name: 'osmosis-core', version: '0.45'
+    compile group: 'org.openstreetmap.osmosis', name: 'osmosis-xml', version: '0.45'
+
+
 
 }

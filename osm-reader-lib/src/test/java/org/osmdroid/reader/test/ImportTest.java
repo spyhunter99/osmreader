@@ -4,9 +4,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osmdroid.reader.model.ImportOptions;
+import org.osmdroid.reader.readers.IOsmReader;
 import org.osmdroid.reader.readers.OsmPullParserReader;
 import org.osmdroid.reader.QueryTools;
 import org.osmdroid.reader.model.SearchResults;
+import org.osmdroid.reader.readers.OsmReaderFactory;
 
 import java.io.File;
 import java.sql.Connection;
@@ -46,7 +48,7 @@ public class ImportTest {
             connection = DriverManager.getConnection("jdbc:sqlite:" + output.getAbsolutePath());
         } else {
             connection = DriverManager.getConnection("jdbc:sqlite:" + output.getAbsolutePath());
-            OsmPullParserReader osmPullParserReader = new OsmPullParserReader();
+            IOsmReader osmPullParserReader = OsmReaderFactory.getNewReader();
             Set<Short> opts = new HashSet<Short>();
             opts.add(ImportOptions.INCLUDE_WAYS);
             opts.add(ImportOptions.INCLUDE_RELATIONS);

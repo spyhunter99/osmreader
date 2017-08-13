@@ -6,6 +6,7 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -69,5 +70,15 @@ public class DBUtils {
         CompressorInputStream input = new CompressorStreamFactory().createCompressorInputStream(bis);
         BufferedReader br2 = new BufferedReader(new InputStreamReader(input));
         return br2;
+    }
+
+    public static void safeClose(Closeable fis) {
+        if (fis!=null)
+            try {
+                fis.close();
+            } catch (IOException e) {
+
+            }
+
     }
 }

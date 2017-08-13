@@ -9,7 +9,8 @@ package org.osmdroid.reader.readers;
 public class OsmReaderFactory {
     public static IOsmReader getNewReader(){
         //if needed, we can have multiple options here. apparently android is faster with a sax parser
-        return new OsmPullParserReader();
+        //return new OsmPullParserReader();
+        return new OsmosisReader();
         /*
         //TODO
         //if (android), return sax parser
