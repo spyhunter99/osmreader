@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         status = (TextView) findViewById(R.id.importStatus);
         bar = (ProgressBar) findViewById(R.id.importProgress);
 
-        org.sqldroid.Log.LEVEL = android.util.Log.VERBOSE;
+        //org.sqldroid.Log.LEVEL = android.util.Log.VERBOSE;
 
 
         //TODO this needs a file browser to list all bz2 files
@@ -43,12 +43,13 @@ public class MainActivity extends AppCompatActivity {
         //probably should use a common database name and location to keep things simple
         //
 
-        final IOsmReader iOsmReader = new OsmosisReader();
+        final IOsmReader iOsmReader = new OsmPullParserReader();
         final long start = System.currentTimeMillis();
         Set<Short> opts = new HashSet<Short>();
         opts.add(ImportOptions.INCLUDE_RELATIONS);
         opts.add(ImportOptions.INCLUDE_WAYS);
         iOsmReader.setOptions(opts);
+        iOsmReader.setBatchSize(0);
 
         //this updates the UI
         new Thread(new Runnable() {
@@ -103,12 +104,13 @@ public class MainActivity extends AppCompatActivity {
                         db.delete();
 
                     //, true,getClass().getClassLoader()).newInstance()));
-                    Connection con = DriverManager.getConnection("jdbc:sqldroid:/sdcard/importTest.sqlite");
+                    //Connection con = DriverManager.getConnection("jdbc:sqldroid:/sdcard/importTest.sqlite");
+                    Connection con = DriverManager.getConnection("jdbc:sqlite:/sdcard/importTest.sqlite");
 
                     final long now = System.currentTimeMillis();
 
 
-                    iOsmReader.setBatchSize(0);
+                    iOsmReader.setBatchSize(400);
                     iOsmReader.read(new File("/sdcard/delaware-latest.osm.bz2"), con);
                     running=false;
                     DBUtils.safeClose(con);

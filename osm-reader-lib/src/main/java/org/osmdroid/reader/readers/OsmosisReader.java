@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -61,7 +60,7 @@ public class OsmosisReader implements IOsmReader, Sink {
     private Connection connection;
     private long batchCount = 0;
     private int BATCH_SIZE = 100;
-    private boolean isPbf=false;
+    private boolean isPbf = false;
 
     /**
      * gets at estimate for completion.
@@ -98,7 +97,7 @@ public class OsmosisReader implements IOsmReader, Sink {
     public void read(File path, Connection connection) throws Exception {
         File file = path; // the input file
         if (file.getName().toLowerCase().endsWith(".pbf"))
-            isPbf=true;
+            isPbf = true;
 
         long start = System.currentTimeMillis();
         if (path == null)
@@ -282,7 +281,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                 if (hasRelations) {
                     try {
                         INSERT_RELATIONS.executeBatch();
-                        INSERT_RELATIONS.clearBatch();
+
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     } finally {
@@ -292,7 +291,7 @@ public class OsmosisReader implements IOsmReader, Sink {
                 if (hasTags) {
                     try {
                         INSERT_TAG.executeBatch();
-                        INSERT_TAG.clearBatch();
+
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     } finally {

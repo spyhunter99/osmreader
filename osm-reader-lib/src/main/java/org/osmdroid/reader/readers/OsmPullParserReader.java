@@ -86,6 +86,21 @@ public class OsmPullParserReader implements IOsmReader {
     }
 
 
+    private PreparedStatement INSERT_NODES;
+    private PreparedStatement INSERT_RELATIONS;
+    private PreparedStatement INSERT_WAYS;
+    private PreparedStatement INSERT_TAG;
+    private PreparedStatement INSERT_WAY_NO;
+    private PreparedStatement INSERT_RELATION_MEMBER;
+    private Connection connection;
+    boolean hasNodes = false;
+    boolean hasRelationMembers = false;
+    boolean hasRelations = false;
+    boolean hasTags = false;
+    boolean hasWayNo = false;
+    boolean hasWays = false;
+    int batchCount = 0;
+
     /**
      * imports the osm bz2 file into the database
      *
@@ -160,7 +175,7 @@ public class OsmPullParserReader implements IOsmReader {
         isReading = true;
         Stack<String> xpath = new Stack<String>();
         recordCount = 0;
-        long batchCount = 0;
+        batchCount = 0;
         long lastId = -1;
         long start = System.currentTimeMillis();
         OsmType lastType = OsmType.NODE;
@@ -179,113 +194,34 @@ public class OsmPullParserReader implements IOsmReader {
 
         connection.setAutoCommit(false);
 
-        final PreparedStatement INSERT_NODES = connection.prepareStatement("INSERT OR REPLACE INTO nodes (id,changeset,version,user,uid,timestamp,lat,lon) "
+        INSERT_NODES = connection.prepareStatement("INSERT OR REPLACE INTO nodes (id,changeset,version,user,uid,timestamp,lat,lon) "
             + "VALUES (?,?,?,?, ?,?,?,?); ");
         connection.setAutoCommit(false);
 
-        final PreparedStatement INSERT_RELATIONS = connection.prepareStatement("INSERT OR REPLACE INTO relations (id,changeset,version,user,uid,timestamp) "
+        INSERT_RELATIONS = connection.prepareStatement("INSERT OR REPLACE INTO relations (id,changeset,version,user,uid,timestamp) "
             + "VALUES (?,?,?,?,?,?); ");
 
-        final PreparedStatement INSERT_WAYS = connection.prepareStatement("INSERT OR REPLACE INTO ways (id,changeset,version,user,uid,timestamp) "
+        INSERT_WAYS = connection.prepareStatement("INSERT OR REPLACE INTO ways (id,changeset,version,user,uid,timestamp) "
             + "VALUES (?,?,?,?,?,?); ");
 
-        final PreparedStatement INSERT_TAG = connection.prepareStatement("INSERT OR REPLACE INTO tag (id,k,v,reftype) "
+        INSERT_TAG = connection.prepareStatement("INSERT OR REPLACE INTO tag (id,k,v,reftype) "
             + "VALUES (?,?,?,?); ");
 
-        final PreparedStatement INSERT_WAY_NO = connection.prepareStatement("INSERT OR REPLACE INTO way_no (way_id,node_id) "
+        INSERT_WAY_NO = connection.prepareStatement("INSERT OR REPLACE INTO way_no (way_id,node_id) "
             + "VALUES (?,?); ");
 
-        final PreparedStatement INSERT_RELATION_MEMBER = connection.prepareStatement("INSERT OR REPLACE INTO relation_members (id,type,ref,role) "
+        INSERT_RELATION_MEMBER = connection.prepareStatement("INSERT OR REPLACE INTO relation_members (id,type,ref,role) "
             + "VALUES (?,?,?,?); ");
+
+        this.connection = connection;
 
 
         Date timestamp = new Date(System.currentTimeMillis());
 
-        boolean hasNodes = false;
-        boolean hasRelationMembers = false;
-        boolean hasRelations = false;
-        boolean hasTags = false;
-        boolean hasWayNo = false;
-        boolean hasWays = false;
+
         int eventType = xmlStreamReader.getEventType();
         while (eventType != XmlPullParser.END_DOCUMENT) {
-            if (batchCount > BATCH_SIZE) {
-                batchCount = 0;
-                try {
-                    if (hasNodes) {
-                        try {
-                            INSERT_NODES.executeBatch();
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        } finally {
-                            INSERT_NODES.clearBatch();
-                        }
-                    }
-                    if (hasRelationMembers) {
-                        try {
-                            INSERT_RELATION_MEMBER.executeBatch();
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        } finally {
-                            INSERT_RELATION_MEMBER.clearBatch();
-
-                        }
-                    }
-                    if (hasRelations) {
-                        try {
-                            INSERT_RELATIONS.executeBatch();
-                            INSERT_RELATIONS.clearBatch();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        } finally {
-                            INSERT_RELATIONS.clearBatch();
-                        }
-                    }
-                    if (hasTags) {
-                        try {
-                            INSERT_TAG.executeBatch();
-                            INSERT_TAG.clearBatch();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        } finally {
-                            INSERT_TAG.clearBatch();
-                        }
-                    }
-                    if (hasWayNo) {
-                        try {
-                            INSERT_WAY_NO.executeBatch();
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        } finally {
-                            INSERT_WAY_NO.clearBatch();
-                        }
-                    }
-                    if (hasWays) {
-                        try {
-
-                            INSERT_WAYS.executeBatch();
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        } finally {
-                            INSERT_WAYS.clearBatch();
-                        }
-                    }
-                    connection.commit();
-
-                    hasNodes = false;
-                    hasRelationMembers = false;
-                    hasRelations = false;
-                    hasTags = false;
-                    hasWayNo = false;
-                    hasWays = false;
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
+            checkCommit(false);
             //String tagname = xmlStreamReader.getName();
             recordCount++;
             key = "";
@@ -358,6 +294,7 @@ public class OsmPullParserReader implements IOsmReader {
                                 //INSERT_NODES.clearParameters();
                                 inserts++;
                                 batchCount++;
+                                checkCommit(false);
                             } catch (Exception ex) {
                                 System.out.println(INSERT_NODES.toString());
                                 ex.printStackTrace();
@@ -418,9 +355,9 @@ public class OsmPullParserReader implements IOsmReader {
                                     INSERT_RELATIONS.setLong(6, timestamp.getTime());
                                     INSERT_RELATIONS.addBatch();
                                     hasRelations = true;
-                                    //INSERT_RELATIONS.clearParameters();
                                     batchCount++;
                                     inserts++;
+                                    checkCommit(false);
                                 } catch (Exception ex) {
                                     System.out.println(INSERT_RELATIONS.toString());
                                     ex.printStackTrace();
@@ -437,8 +374,6 @@ public class OsmPullParserReader implements IOsmReader {
 
 
                         for (int i = 0; i < xmlStreamReader.getAttributeCount(); i++) {
-                            //System.out.println(xmlStreamReader.getAttributeName(i) + "="
-                            //	+ xmlStreamReader.getAttributeValue(i));
                             if (ID.equalsIgnoreCase(xmlStreamReader.getAttributeName(i))) {
                                 id = Long.parseLong(xmlStreamReader.getAttributeValue(i));
                                 continue;
@@ -477,9 +412,10 @@ public class OsmPullParserReader implements IOsmReader {
                                     INSERT_WAYS.setLong(6, timestamp.getTime());
                                     INSERT_WAYS.addBatch();
                                     hasWays = true;
-                                    //INSERT_WAYS.clearParameters();
+
                                     inserts++;
                                     batchCount++;
+                                    //INSERT_WAYS.clearParameters();
                                 } catch (Exception ex) {
                                     System.out.println(INSERT_WAYS.toString());
                                     ex.printStackTrace();
@@ -521,9 +457,10 @@ public class OsmPullParserReader implements IOsmReader {
                                     INSERT_TAG.setInt(4, lastType.ordinal());
                                     INSERT_TAG.addBatch();
                                     hasTags = true;
-                                    //INSERT_TAG.clearParameters();
+
                                     inserts++;
                                     batchCount++;
+                                    checkCommit(false);
                                 } catch (Exception ex) {
                                     System.out.println(INSERT_TAG.toString());
                                     ex.printStackTrace();
@@ -554,10 +491,11 @@ public class OsmPullParserReader implements IOsmReader {
                                         INSERT_WAY_NO.setLong(1, lastId);
                                         INSERT_WAY_NO.setLong(2, id);
                                         INSERT_WAY_NO.addBatch();
-                                        //INSERT_WAY_NO.clearParameters();
                                         batchCount++;
                                         hasWayNo = true;
                                         inserts++;
+                                        checkCommit(false);
+
                                     } catch (Exception ex) {
                                         System.out.println(INSERT_WAY_NO.toString());
                                         ex.printStackTrace();
@@ -604,9 +542,10 @@ public class OsmPullParserReader implements IOsmReader {
                                         INSERT_RELATION_MEMBER.setString(4, val);
                                         INSERT_RELATION_MEMBER.addBatch();
                                         hasRelationMembers = true;
-                                        //INSERT_RELATION_MEMBER.clearParameters();
+
                                         inserts++;
                                         batchCount++;
+                                        checkCommit(false);
                                     } catch (Exception ex) {
                                         System.out.println(INSERT_RELATION_MEMBER.toString());
                                         ex.printStackTrace();
@@ -656,80 +595,7 @@ public class OsmPullParserReader implements IOsmReader {
             eventType = xmlStreamReader.next();
         }
 
-        try {
-            if (hasNodes) {
-                try {
-                    INSERT_NODES.executeBatch();
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    INSERT_NODES.clearBatch();
-                }
-            }
-            if (hasRelationMembers) {
-                try {
-                    INSERT_RELATION_MEMBER.executeBatch();
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    INSERT_RELATION_MEMBER.clearBatch();
-
-                }
-            }
-            if (hasRelations) {
-                try {
-                    INSERT_RELATIONS.executeBatch();
-                    INSERT_RELATIONS.clearBatch();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    INSERT_RELATIONS.clearBatch();
-                }
-            }
-            if (hasTags) {
-                try {
-                    INSERT_TAG.executeBatch();
-                    INSERT_TAG.clearBatch();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    INSERT_TAG.clearBatch();
-                }
-            }
-            if (hasWayNo) {
-                try {
-                    INSERT_WAY_NO.executeBatch();
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    INSERT_WAY_NO.clearBatch();
-                }
-            }
-            if (hasWays) {
-                try {
-
-                    INSERT_WAYS.executeBatch();
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    INSERT_WAYS.clearBatch();
-                }
-            }
-            connection.commit();
-
-            hasNodes = false;
-            hasRelationMembers = false;
-            hasRelations = false;
-            hasTags = false;
-            hasWayNo = false;
-            hasWays = false;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        checkCommit(true);
 
         DBUtils.safeClose(xmlInputStream);
         DBUtils.safeClose(INSERT_NODES);
@@ -767,5 +633,84 @@ public class OsmPullParserReader implements IOsmReader {
         BATCH_SIZE = size;
     }
 
+    private void checkCommit(boolean force) {
+        if (force || (batchCount > BATCH_SIZE)) {
+            batchCount = 0;
+            try {
+                if (hasNodes) {
+                    try {
+                        INSERT_NODES.executeBatch();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        INSERT_NODES.clearBatch();
+                    }
+                }
+                if (hasRelationMembers) {
+                    try {
+                        INSERT_RELATION_MEMBER.executeBatch();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        INSERT_RELATION_MEMBER.clearBatch();
+
+                    }
+                }
+                if (hasRelations) {
+                    try {
+                        INSERT_RELATIONS.executeBatch();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        INSERT_RELATIONS.clearBatch();
+                    }
+                }
+                if (hasTags) {
+                    try {
+                        INSERT_TAG.executeBatch();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        INSERT_TAG.clearBatch();
+                    }
+                }
+                if (hasWayNo) {
+                    try {
+                        INSERT_WAY_NO.executeBatch();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        INSERT_WAY_NO.clearBatch();
+                    }
+                }
+                if (hasWays) {
+                    try {
+
+                        INSERT_WAYS.executeBatch();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        INSERT_WAYS.clearBatch();
+                    }
+                }
+                connection.commit();
+
+                hasNodes = false;
+                hasRelationMembers = false;
+                hasRelations = false;
+                hasTags = false;
+                hasWayNo = false;
+                hasWays = false;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 
 }

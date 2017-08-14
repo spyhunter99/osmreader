@@ -81,9 +81,13 @@ Processing time on :
 | Implementation | CPU | Data set | Batch Size | Time wo/Ways & Relations | Time w/Ways & Relations
 | -------------- | --- | -------- | ---------- | ------------------------ | ----------------------- |
 | XML pull parser | AMD 8 core  with SSD | Delaware.bz2 | 500 | n/a | 102 sec
-| Osmosis | AMD 8 core  with SSD | Delaware.bz2 | 500 | n/a | 83 sec
-| XML pull parser | Galaxy S5  | Delaware.bz2 | pending | pending  | pending
+| XML pull parser | Galaxy S5  | Delaware.bz2 | 400 | 1 hr+  | 1 hr+
 | XML pull parser | AMD 8 core  with SSD | Planet | 500 | about 66 days (est) |
+| Osmosis | AMD 8 core  with SSD | Delaware.bz2 | 500 | n/a | 83 sec
+| Osmosis | Galaxy S5 | Delaware.bz2 | 400 | n/a | n/a
+
+**Notes**
+Osmosis doesn't appear to work in an android environment. No idea why
 
 
 # Credits

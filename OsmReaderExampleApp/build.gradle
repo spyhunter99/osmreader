@@ -18,6 +18,7 @@ android {
 
 }
 
+
 dependencies {
 
     compile 'com.android.support:support-v4:23+'
@@ -30,10 +31,9 @@ dependencies {
         exclude group: 'org.ogce'
         exclude group: 'xerces'
         exclude group: 'commons-logging'
-        exclude group: 'org.xerial'
     }
 
-    compile 'org.sqldroid:sqldroid:1.0.3'
+   // compile 'org.sqldroid:sqldroid:1.0.3'
 
 
     //crash logging
