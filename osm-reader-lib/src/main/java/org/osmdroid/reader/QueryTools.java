@@ -213,7 +213,7 @@ public class QueryTools {
      * @return
      * @throws Exception
      */
-    public static List<SearchResults> reverseGeocode(String searchQuery, int limit, int offset, Connection con) throws Exception {
+    public static List<SearchResults> search(String searchQuery, int limit, int offset, Connection con) throws Exception {
         List<SearchResults> ret = new ArrayList<SearchResults>();
 
         ResultSet rs = null;

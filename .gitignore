@@ -9,3 +9,7 @@
 build/
 target/
 .idea
+osm-reader-lib/lib/
+*.sqlite
+osm-reader-lib/work/
+keystore.jks

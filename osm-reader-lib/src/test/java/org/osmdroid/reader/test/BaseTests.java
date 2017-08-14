@@ -1,15 +1,12 @@
 package org.osmdroid.reader.test;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osmdroid.reader.model.Address;
 import org.osmdroid.reader.model.ImportOptions;
 import org.osmdroid.reader.readers.IOsmReader;
-import org.osmdroid.reader.readers.OsmPullParserReader;
 import org.osmdroid.reader.QueryTools;
 import org.osmdroid.reader.model.SearchResults;
-import org.osmdroid.reader.readers.OsmReaderFactory;
 
 import java.io.File;
 import java.sql.Connection;
@@ -21,8 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.management.Query;
 
 import static org.osmdroid.reader.Main.toHumanReadableDuration;
 
@@ -97,7 +92,7 @@ public abstract class BaseTests {
     @Test
     public void testQuery() throws Exception {
         init();
-         List<SearchResults> searchResults = QueryTools.reverseGeocode("new castle", 10, 0, connection);
+         List<SearchResults> searchResults = QueryTools.search("new castle", 10, 0, connection);
          Assert.assertTrue(!searchResults.isEmpty());
          for (int i=0; i < searchResults.size(); i++) {
              SearchResults record = searchResults.get(i);

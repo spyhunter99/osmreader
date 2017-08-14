@@ -23,6 +23,11 @@ import java.util.Set;
 import static org.osmdroid.reader.Main.formatter;
 import static org.osmdroid.reader.Main.toHumanReadableDuration;
 
+//Select a POI database
+//query for POIs
+//reverse geocode
+//download + import a file
+
 public class MainActivity extends AppCompatActivity {
     boolean running = true;
     ProgressBar bar ;

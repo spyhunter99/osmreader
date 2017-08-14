@@ -10,6 +10,9 @@ Alex O'Ree, committer for osmdroid, Apache Software Foundation, and many other p
 
 Apache Software License v2.0
 
+# Development status
+
+Still working on this in my spare time. Not really API or functionally stable right now.
 
 # Usage
 
@@ -56,7 +59,41 @@ Once this process is complete, you'll have yourself a database that's easy to qu
 
 ## How to query for POIs, Street names, City/Town/State names, etc
 
-TODO
+Keyword search (everywhere)
+
+```java
+List<SearchResults> searchResults = QueryTools.search("new castle", 10, 0, connection);
+for (int i=0; i < searchResults.size(); i++) {
+     SearchResults record = searchResults.get(i);
+     System.out.println(record.getName() + " " + searchResults.get(i).getType() + " " + searchResults.get(i).getLat() + "," + searchResults.get(i).getLon() + "," + searchResults.get(i).getDatabaseId());
+ }
+```
+
+Keyword search within a bounds
+
+```java
+List<SearchResults> searchResults = QueryTools.search("new castle", 10, 0, connection, 40,-75,39,-76);
+for (int i=0; i < searchResults.size(); i++) {
+     SearchResults record = searchResults.get(i);
+     System.out.println(record.getName() + " " + searchResults.get(i).getType() + " " + searchResults.get(i).getLat() + "," + searchResults.get(i).getLon() + "," + searchResults.get(i).getDatabaseId());
+ }
+```
+
+Using the `databaseId` from above, get all "tags" for a given Node, Way, or Relation
+
+```java
+Map<String, String> tags = QueryTools.getTags(366753278L, connection, 1000, 0);
+```
+
+Using the `databaseId` from above, Street address, phone number and website extraction.
+Note: this is a best effort extraction using commonly used keywords, since the osm data model is open ended.
+
+```java
+Address addr = QueryTools.getAddress(366753278L, connection);
+```
+
+
+
 
 ## Where do i get the data from?
 
