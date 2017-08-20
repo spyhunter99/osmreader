@@ -1,0 +1,50 @@
+<LinearLayout
+     android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout
+        android:id="@+id/search_container"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        >
+        <EditText
+            android:layout_alignParentLeft="true"
+            android:id="@+id/search_text"
+            android:layout_width="240dp"
+            android:layout_height="?attr/actionBarSize"
+
+            android:background="@android:color/transparent"
+            android:gravity="center_vertical"
+            android:hint="Search"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingLeft="2dp"
+            android:singleLine="true"
+            android:textColor="#000000"
+            android:textColorHint="#333333"/>
+
+        <Button
+            android:layout_alignParentRight="true"
+            android:id="@+id/search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="GO"/>
+    </RelativeLayout>
+    <TextView
+        android:id="@+id/currentLocation"
+        android:text=""
+        android:layout_width="match_parent"
+        android:layout_height="40dp"/>
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapView"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent">
+
+    </org.osmdroid.views.MapView>
+</LinearLayout>

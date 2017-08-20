@@ -29,7 +29,7 @@ public class PermissionCheckActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23 && needsPermissions()) {
             checkPermissions();
         } else {
-            Intent i = new Intent(this, MainActivity.class);
+            Intent i = new Intent(this, SplashActivity.class);
             startActivity(i);
             finish();
         }
@@ -83,7 +83,7 @@ public class PermissionCheckActivity extends AppCompatActivity {
                 Boolean storage = perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
                 if (storage) {
                     // All Permissions Granted
-                    Intent i = new Intent(this, MainActivity.class);
+                    Intent i = new Intent(this, SplashActivity.class);
                     startActivity(i);
                     finish();
                 } else { // !location && !storage case

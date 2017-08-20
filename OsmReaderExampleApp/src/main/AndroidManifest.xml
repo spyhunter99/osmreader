@@ -6,21 +6,24 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
+        android:name="org.osmdroid.reader.OsmApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:name="org.osmdroid.reader.OsmApplication"
         android:theme="@style/AppTheme">
         <activity android:name="org.osmdroid.reader.MainActivity">
-
         </activity>
         <activity android:name="org.osmdroid.reader.PermissionCheckActivity">
+        </activity>
+        <activity android:name="org.osmdroid.reader.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name="org.osmdroid.reader.QueryActivity">
         </activity>
     </application>
 
